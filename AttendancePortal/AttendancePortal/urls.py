@@ -20,6 +20,7 @@ urlpatterns = [
     path('',schema_view.with_ui(cache_timeout=0), name='schema-json'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
+    path('attendance/', include('attendance.urls')),
 ]
 
 if settings.DEBUG:
