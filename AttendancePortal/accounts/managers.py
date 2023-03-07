@@ -1,16 +1,16 @@
 from django.contrib.auth.models import BaseUserManager
 
 class UserManager(BaseUserManager):
-    def create_user(self, unique_id, first_name, last_name,password=None):
+    def create_user(self, sap_id, first_name, last_name,password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
         """
-        if not unique_id:
-            raise ValueError('Users must have an email address')
+        if not sap_id:
+            raise ValueError('Users must have an Sap ID')
 
         user = self.model(
-            unique_id = unique_id,
+            sap_id = sap_id,
             first_name = first_name,
             last_name = last_name
         )
@@ -19,13 +19,13 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, unique_id, first_name, last_name,password=None):
+    def create_superuser(self, sap_id, first_name, last_name,password=None):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
         """
         user = self.create_user(
-            unique_id=unique_id,
+            sap_id = sap_id,
             password=password,
             first_name = first_name,
             last_name= last_name

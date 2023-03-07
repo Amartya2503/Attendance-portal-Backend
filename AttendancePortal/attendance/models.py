@@ -1,12 +1,12 @@
 from django.db import models
-from accounts.models import User,student ,subject,teacher
+from accounts.models import User,Student ,Subject,Teacher
 
 
 # Create your models here.
 
-class batch(models.Model):
+class Batch(models.Model):
     batch_name = models.CharField(max_length=55,primary_key=True)
-    students = models.ManyToManyField(student)
+    students = models.ManyToManyField(Student)
     number_of_students = models.IntegerField()
     department = models.CharField(max_length=125)
 
@@ -14,11 +14,11 @@ class batch(models.Model):
         return self.batch_name
 
 
-class lecture(models.Model):
+class Lecture(models.Model):
     lec_id = models.IntegerField(primary_key = True)
-    teacher_id = models.ForeignKey(teacher , on_delete=models.CASCADE)
-    batch_name = models.ForeignKey(batch, on_delete=models.CASCADE)
-    sub_id = models.ForeignKey(subject, on_delete=models.CASCADE)
+    teacher_id = models.ForeignKey(Teacher , on_delete=models.CASCADE)
+    batch_name = models.ForeignKey(Batch, on_delete=models.CASCADE)
+    sub_id = models.ForeignKey(Subject, on_delete=models.CASCADE)
     date_time = models.DateTimeField(auto_now_add=True)
     note = models.TextField(max_length=250)
 

@@ -41,23 +41,23 @@ class User(AbstractBaseUser):
     # .
     # .
     # .
-class student(models.Model):
+class Student(models.Model):
     user = models.ForeignKey("User",related_name="studentid", on_delete=models.CASCADE)
 
     # def __str__(self):
     #     return 
 
-class subject(models.Model):
+class Subject(models.Model):
     subject_id = models.CharField(max_length=25,primary_key=True)
     name = models.CharField(max_length=45)
 
     def __str__(self):
         return self.name + self.subject_id
 
-class teacher(models.Model):
+class Teacher(models.Model):
     user = models.ForeignKey(User,related_name="is_teacher",on_delete=models.CASCADE)
     name = models.CharField(max_length=125)
-    subjects = models.ManyToManyField(subject)
+    subjects = models.ManyToManyField(Subject)
 
     def __str__(self) -> str:
         return str(self.teacher_id) + " "+ self.name
