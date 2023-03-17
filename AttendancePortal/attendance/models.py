@@ -24,3 +24,10 @@ class Lecture(models.Model):
 
     def __str__(self):
         return self.batch_name + " " + self.note
+
+class attendance(models.Model):
+    lec_id = models.ForeignKey(Lecture, on_delete=models.CASCADE)
+    sap_id = models.ForeignKey(Student,on_delete=models.CASCADE)
+    date_time = models.DateTimeField(auto_now_add=True)
+    status = models.BooleanField(default= False)
+    
