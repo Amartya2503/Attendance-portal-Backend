@@ -1,7 +1,7 @@
 from django.contrib.auth.models import BaseUserManager
 
 class UserManager(BaseUserManager):
-    def create_user(self, sap_id, first_name, last_name,password=None):
+    def create_user(self, sap_id, first_name, last_name, email, password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -12,14 +12,15 @@ class UserManager(BaseUserManager):
         user = self.model(
             sap_id = sap_id,
             first_name = first_name,
-            last_name = last_name
+            last_name = last_name,
+            email = email,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, sap_id, first_name, last_name,password=None):
+    def create_superuser(self, sap_id, first_name, last_name, email, password=None):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
@@ -28,7 +29,8 @@ class UserManager(BaseUserManager):
             sap_id = sap_id,
             password=password,
             first_name = first_name,
-            last_name= last_name
+            last_name= last_name,
+            email = email
         )
         user.is_admin = True
         user.save(using=self._db)

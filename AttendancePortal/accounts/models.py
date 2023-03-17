@@ -7,13 +7,17 @@ class User(AbstractBaseUser):
     sap_id = models.BigIntegerField(unique=True,help_text='Enter your Unique Id')
     first_name = models.CharField(max_length=20, help_text='Enter your First name')
     last_name = models.CharField(max_length=20, help_text='Enter your Last name')
+    email = models.EmailField(unique=True, help_text='Enter your email' )
+    email_token =  models.CharField(max_length=250, null=True, blank=True)
+    password_reset_token = models.CharField(max_length=250, null=True, blank=True)
+    is_email_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-
+    
     objects = UserManager()
 
     USERNAME_FIELD = 'sap_id'
-    REQUIRED_FIELDS = ['first_name','last_name']
+    REQUIRED_FIELDS = ['first_name','last_name','email']
 
     def __str__(self):
         return self.first_name+' '+self.last_name+', '+str(self.sap_id)
