@@ -7,7 +7,7 @@ from rest_framework import status
 
 from .serializers import AttendanceSerializer
 
-from .models import attendance
+from .models import Attendance
 
 # Create your views here.
 class hello(GenericAPIView):
@@ -31,7 +31,7 @@ class AcessAttendance(GenericAPIView):
     
     def get_object(self,pk):
         try:
-            instance = attendance.objects.get(sap_id = pk)
+            instance = Attendance.objects.get(sap_id = pk)
             return instance
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)

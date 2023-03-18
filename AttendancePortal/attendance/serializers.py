@@ -1,11 +1,11 @@
 from typing import Self
 from rest_framework import serializers
 
-from attendance.models import attendance
+from attendance.models import Attendance
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = attendance
+        model = Attendance
         fields = '__all__'
