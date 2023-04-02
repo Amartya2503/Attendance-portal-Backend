@@ -3,7 +3,7 @@ from .managers import UserManager
 from django.contrib.auth.models import AbstractBaseUser
 
 
-from attendance.models import Batch
+
 
 # Create your models here.
 class User(AbstractBaseUser):
@@ -52,11 +52,11 @@ class User(AbstractBaseUser):
 
 class Student(models.Model):
     user = models.ForeignKey("User",related_name="studentid", on_delete=models.CASCADE)
-    batch_id = models.ManyToManyField(Batch, related_name="belongs-to", on_delete = models.CASCADE)
+    # batch_id = models.ManyToManyField(Batch, related_name="belongs_to")
     totalAttendance = models.IntegerField(default=0)
     
-    # def __str__(self):
-    #     return 
+    def __str__(self):
+        return str(self.user.sap_id)
 
 class Subject(models.Model):
     subject_id = models.CharField(max_length=25,primary_key=True)
@@ -75,14 +75,30 @@ class Teacher(models.Model):
 
 
 
-# class batch(models.Model):
-#     batch_name = models.CharField(max_length=55,primary_key=True)
-#     students = models.ManyToManyField(student)
-#     number_of_students = models.IntegerField()
-#     majors = models.CharField(max_length=125)
+class Batch(models.Model):
 
-#     def __str__(self):
-#         return self.name + " " + str(self.batch_id)
+    # from accounts.models import Student
+
+    batch_name = models.CharField(max_length=55,primary_key=True)
+    students = models.ManyToManyField(Student)
+    number_of_students = models.IntegerField()
+    department = models.CharField(max_length=125)
+
+    def __str__(self):
+        return self.batch_name +" "+ self.pk
+    
+class Lecture(models.Model):
+    # from accounts.models import Teacher
+
+    lec_id = models.IntegerField(primary_key = True)
+    teacher_id = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    batch_name = models.ForeignKey(Batch, on_delete=models.CASCADE)
+    # sub_id = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    date_time = models.DateTimeField(auto_now_add=True)
+    note = models.TextField(max_length=250)
+
+    def __str__(self):
+        return self.batch_name + " " + self.note
 
 
 # class lecture(models.Model):
