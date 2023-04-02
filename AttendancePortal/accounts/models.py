@@ -50,30 +50,15 @@ class User(AbstractBaseUser):
     # .
 # the frontend and app will request the data of Student and using nested serializer we will also provide the data present in the user object of that student such as his name etc
 
+
+    
 class Student(models.Model):
     user = models.ForeignKey("User",related_name="studentid", on_delete=models.CASCADE)
-    # batch_id = models.ManyToManyField(Batch, related_name="belongs_to")
     totalAttendance = models.IntegerField(default=0)
     
     def __str__(self):
         return str(self.user.sap_id)
-
-class Subject(models.Model):
-    subject_id = models.CharField(max_length=25,primary_key=True)
-    name = models.CharField(max_length=45)
-
-    def __str__(self):
-        return self.name + self.subject_id
-
-class Teacher(models.Model):
-    user = models.ForeignKey(User,related_name="is_teacher",on_delete=models.CASCADE)
-    name = models.CharField(max_length=125)
-    subjects = models.ManyToManyField(Subject)
-
-    def __str__(self) -> str:
-        return str(self.teacher_id) + " "+ self.name
-
-
+    
 
 class Batch(models.Model):
 
@@ -85,7 +70,35 @@ class Batch(models.Model):
     department = models.CharField(max_length=125)
 
     def __str__(self):
-        return self.batch_name +" "+ self.pk
+        return self.batch_name +"- "+ self.department
+    
+
+class StudentBatchRlation(models.Model):
+    batch_id = models.ForeignKey(Batch, related_name="belongs_to", on_delete=models.CASCADE)
+    student = models.ForeignKey(Student,related_name= "student", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.batch_id.batch_name) +" - "+ self.student.user.first_name
+
+
+
+class Subject(models.Model):
+    subject_id = models.CharField(max_length=25,primary_key=True)
+    name = models.CharField(max_length=45,default="CN") 
+
+    def __str__(self):
+        return self.name + self.subject_id
+
+class Teacher(models.Model):
+    user = models.ForeignKey(User,related_name="is_teacher",on_delete=models.CASCADE)
+    # name = models.CharField(max_length=125)  this field is not required as the user has a name
+    subjects = models.ManyToManyField(Subject)
+    batches = models.ManyToManyField(Batch)
+
+    def __str__(self) -> str:
+        return self.user.first_name + " " + self.user.last_name
+
+
     
 class Lecture(models.Model):
     # from accounts.models import Teacher
@@ -98,15 +111,4 @@ class Lecture(models.Model):
     note = models.TextField(max_length=250)
 
     def __str__(self):
-        return self.batch_name + " " + self.note
-
-
-# class lecture(models.Model):
-#     lec_id = models.IntegerField(primary_key = True)
-#     teacher_id = models.ForeignKey("teacher",relation_name = "lectureTeacher", on_delete=models.CASCADE)
-#     batch_name = models.ForeignKey("batch", relation_name = "batch_id",on_delete=models.CASCADE)
-#     sub_id = models.ForeignKey(subject,relation_name = "subject_id",on_delete=models.CASCADE)
-#     date_time = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return self.batch_id + " " + str(self.batch_id) 
+        return self.batch_name.batch_name +":  "+ self.note
