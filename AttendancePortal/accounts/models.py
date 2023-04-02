@@ -2,6 +2,9 @@ from django.db import models
 from .managers import UserManager
 from django.contrib.auth.models import AbstractBaseUser
 
+
+from attendance.models import Batch
+
 # Create your models here.
 class User(AbstractBaseUser):
     sap_id = models.BigIntegerField(unique=True,help_text='Enter your Unique Id')
@@ -45,9 +48,13 @@ class User(AbstractBaseUser):
     # .
     # .
     # .
+# the frontend and app will request the data of Student and using nested serializer we will also provide the data present in the user object of that student such as his name etc
+
 class Student(models.Model):
     user = models.ForeignKey("User",related_name="studentid", on_delete=models.CASCADE)
-
+    batch_id = models.ManyToManyField(Batch, related_name="belongs-to", on_delete = models.CASCADE)
+    totalAttendance = models.IntegerField(default=0)
+    
     # def __str__(self):
     #     return 
 
