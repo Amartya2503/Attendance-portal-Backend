@@ -51,13 +51,6 @@ class BatchStudent(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_student')
     student =  models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_batch')
 
-class BatchLecture(models.Model):
-    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_lecture')
-    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='lecture_batch')
-
-    def __str__(self):
-        return str(self.student) + " " + str(self.lecture)
-
 class SubjectTeacher(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_teacher')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_subject')
