@@ -1,30 +1,72 @@
 from django.db import models
-from accounts.models import *
-import accounts
-# import accounts.models
+from accounts.models import Teacher, Student, Subject, Department
+import datetime 
 
-# Create your models here.
+class Batch(models.Model):
+    semester = models.PositiveSmallIntegerField()
+    year = models.PositiveIntegerField(default=datetime.date.today().year)
+    name = models.CharField(max_length=55,primary_key=True)
+    class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, default=None)
+    students = models.ManyToManyField(Student)
+    number_of_students = models.IntegerField()
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.CASCADE)
 
+    def __str__(self):
+        yearname = ""
+        semester = self.semester
+        if semester <= 2:
+            yearname = "FE"
+        elif semester <= 4:
+            yearname = "SE"
+        elif semester <= 6:
+            yearname = "TE"
+        elif semester <= 8:
+            yearname = "BE"
+        return yearname + "_" + self.name
+    
+class Lecture(models.Model):
+    room_number = models.CharField(max_length=32, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_lecture')
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='student_leture')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_leture')
+    start_time = models.TimeField(auto_now=False, auto_now_add=False)
+    end_time = models.TimeField(auto_now=False, auto_now_add=False)
+    date = models.DateField(auto_now=False, auto_now_add=False)
+    note = models.TextField(max_length=250, null=True, blank=True)
+    attendance_taken = models.BooleanField(default=False)
+       
+    def __str__(self):
+        return str(self.batch) + " " + self.subject.name + " " + self.getShortTimeString()
 
+    def getTimeString(self):
+        return self.startTime.strftime("%H:%M:%S") + " - " + self.endTime.strftime("%H:%M:%S")
 
+    def getShortTimeString(self):
+        return self.startTime.strftime("%I:%M") + "-" + self.endTime.strftime("%I:%M")
 
-# class Lecture(models.Model):
-#     # from accounts.models import Teacher
+    def getDateTimeString(self):
+        return self.date.strftime("%d-%m-%Y") + " : " + self.getTimeString()
 
-#     lec_id = models.IntegerField(primary_key = True)
-#     teacher_id = models.ForeignKey("Teacher ", on_delete=models.CASCADE)
-#     batch_name = models.ForeignKey(Batch, on_delete=models.CASCADE)
-#     # sub_id = models.ForeignKey(Subject, on_delete=models.CASCADE)
-#     date_time = models.DateTimeField(auto_now_add=True)
-#     note = models.TextField(max_length=250)
+class BatchStudent(models.Model):
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_student')
+    student =  models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_batch')
 
-#     def __str__(self):
-#         return self.batch_name + " " + self.note
+class BatchLecture(models.Model):
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_lecture')
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='lecture_batch')
+
+    def __str__(self):
+        return str(self.student) + " " + str(self.lecture)
+
+class SubjectTeacher(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_teacher')
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_subject')
+
+    def __str__(self):
+        return str(self.teacher) + " " + str(self.subject) + " " + str(self.div)
 
 class Attendance(models.Model):
-
-    lec_id = models.ForeignKey(Lecture, on_delete=models.CASCADE)
-    # sap_id = models.ForeignKey(Student,on_delete=models.CASCADE)
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='lecture_attendance')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lecture_subject')
     date_time = models.DateTimeField(auto_now_add=True)
-    status = models.BooleanField(default= False)
-    
+    present = models.BooleanField(default= False)
