@@ -66,3 +66,13 @@ class Attendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lecture_subject')
     date_time = models.DateTimeField(auto_now_add=True)
     present = models.BooleanField(default= False)
+
+    def isPresent(self):
+        if self.present == True:
+            return "Present"
+        else:
+            return "AB"
+    
+    def __str__(self):
+        return str(self.student.user.sap_id)+ " " + str(self.lecture.batch)+ " " + str(self.lecture.subject) + " " + self.isPresent()
+    
