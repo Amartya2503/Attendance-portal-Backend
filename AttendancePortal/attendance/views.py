@@ -2,19 +2,34 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
-from rest_framework.mixins import CreateModelMixin
 from rest_framework import status
 from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
 from .models import Attendance, Batch, Lecture
 
 # Create your views here.
-class LectureAPI(GenericAPIView, CreateModelMixin):
+class LectureAPI(GenericAPIView):
     serializer_class = LectureSerializer
     queryset = Lecture.objects.all()
     def post(self, request):
-        return self.create(request)
-    # def get(self, request):
-    #     pass
+        lecture = LectureSerializer(data = request.data)
+        if not lecture.is_valid():
+            return Response(data= {'error':lecture.errors}, status=status.HTTP_400_BAD_REQUEST)
+        lecture.save()
+        return Response(data = {'lecture_id': lecture.data['id']}, status=status.HTTP_201_CREATED)
+
+class BatchAPI(GenericAPIView):
+    serializer_class = BatchSerializer
+    queryset = Batch.objects.all()
+    def post(self, request):
+        data_dict={}
+        for key in request.data:
+            data_dict[key] =  request.data[key]
+        data_dict['students'] = data_dict.get('students','[]').strip('][}{)(').split(',')
+        batch = BatchSerializer(data=data_dict)
+        if not batch.is_valid():
+            return Response(data= {'error':batch.errors}, status=status.HTTP_400_BAD_REQUEST)
+        batch.save()
+        return Response(data = {'batch_id': batch.data['id']}, status=status.HTTP_201_CREATED)
 
 class CreateAttendance(GenericAPIView):
     serializer_class = AttendanceSerializer

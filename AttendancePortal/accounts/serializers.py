@@ -4,7 +4,7 @@ from .models import User, Subject, Student, Teacher, Department
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['id', 'sap_id', 'first_name', 'middle_name', 'last_name']
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,7 +43,7 @@ class TeacherSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['user'] = UserSerializer(
             User.objects.get(pk=data['user'])).data
-        data['subjects'] = UserSerializer(
-            Subject.objects.get(pk=data['subjects'])).data
+        data['subjects'] = SubjectSerializer(
+            instance.subjects.all(), many=True).data
         return data
 

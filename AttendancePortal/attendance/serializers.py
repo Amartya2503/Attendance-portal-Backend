@@ -14,7 +14,7 @@ class BatchSerializer(serializers.ModelSerializer):
         data['class_teacher'] = TeacherSerializer(
             Teacher.objects.get(pk=data['class_teacher'])).data
         data['students'] = StudentSerializer(
-            Student.objects.get(pk=data['students'])).data
+            instance.students.all(), many=True).data
         data['department'] = DepartmentSerializer(
             Department.objects.get(pk=data['department'])).data
         return data
@@ -35,9 +35,12 @@ class LectureSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        batch = Batch.objects.get(id = validated_data['batch'])
-        print(batch.students)
+        batch = BatchSerializer(validated_data['batch']).data
         lecture = Lecture.objects.create(**validated_data)
+        for i in batch['students']:
+            serializer = AttendanceSerializer(data = {'lecture' : lecture.id, 'student': i['id']})
+            if serializer.is_valid():
+                serializer.save()
         return lecture
 
 class AttendanceSerializer(serializers.ModelSerializer):

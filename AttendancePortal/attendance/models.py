@@ -5,11 +5,11 @@ import datetime
 class Batch(models.Model):
     semester = models.PositiveSmallIntegerField()
     year = models.PositiveIntegerField(default=datetime.date.today().year)
-    name = models.CharField(max_length=55,primary_key=True)
-    class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, default=None)
+    name = models.CharField(max_length=55)
+    class_teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     students = models.ManyToManyField(Student)
     number_of_students = models.IntegerField()
-    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def __str__(self):
         yearname = "" #to add the no. of students to get autometically filled

@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser
 class User(AbstractBaseUser):
     sap_id = models.BigIntegerField(unique=True,help_text='Enter your Unique Id')
     first_name = models.CharField(max_length=20, help_text='Enter your First name')
-    middle_name = models.CharField(max_length=32, null=True, default=None)
+    middle_name = models.CharField(max_length=32, null=True, blank=True, default=None)
     last_name = models.CharField(max_length=20, help_text='Enter your Last name')
     email = models.EmailField(unique=True, help_text='Enter your email' )
     email_token =  models.CharField(max_length=250, null=True, blank=True)
