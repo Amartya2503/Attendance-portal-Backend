@@ -3,7 +3,6 @@ from accounts.models import Teacher, Student, Subject, Department
 import datetime 
 
 class Batch(models.Model):
-
     semester = models.PositiveSmallIntegerField()
     year = models.PositiveIntegerField(default=datetime.date.today().year)
     name = models.CharField(max_length=55,primary_key=True)
@@ -26,7 +25,7 @@ class Batch(models.Model):
         return yearname + "_" + self.name
     
 class Lecture(models.Model):
-    room_number = models.CharField(max_length=32, blank=True)
+    room_number = models.CharField(max_length=32, null=True, blank=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_lecture')
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='student_leture')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_leture')
@@ -48,20 +47,7 @@ class Lecture(models.Model):
     def getDateTimeString(self):
         return self.date.strftime("%d-%m-%Y") + " : " + self.getTimeString()
 
-class BatchStudent(models.Model):
-    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_student')
-    student =  models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_batch')
-
-class SubjectTeacher(models.Model):
-
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_teacher')
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_subject')
-
-    def __str__(self):
-        return str(self.teacher) + " " + str(self.subject) + " " + str(self.div)
-
 class Attendance(models.Model):
-
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='lecture_attendance')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lecture_subject')
     date_time = models.DateTimeField(auto_now_add=True)

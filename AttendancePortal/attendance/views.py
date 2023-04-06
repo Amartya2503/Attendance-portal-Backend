@@ -1,24 +1,22 @@
 from django.shortcuts import render
-
 from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import CreateModelMixin
 from rest_framework import status
-
-from .serializers import AttendanceSerializer
-
-from .models import Attendance
+from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
+from .models import Attendance, Batch, Lecture
 
 # Create your views here.
-class hello(GenericAPIView):
-
-    def get(sel,request):
-
-        return Response("hello world from this app ")
+class LectureAPI(GenericAPIView, CreateModelMixin):
+    serializer_class = LectureSerializer
+    queryset = Lecture.objects.all()
+    def post(self, request):
+        return self.create(request)
+    # def get(self, request):
+    #     pass
 
 class CreateAttendance(GenericAPIView):
-    # permission class
-
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
     def post(self,request):
