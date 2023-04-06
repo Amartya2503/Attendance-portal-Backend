@@ -17,9 +17,12 @@ class hello(GenericAPIView):
         return Response("hello world from this app ")
 
 class CreateAttendance(GenericAPIView):
+    # permission class
+
     serializer_class = AttendanceSerializer
+    queryset = Attendance.objects.all()
     def post(self,request):
-        serializer = AttendanceSerializer(request.data)
+        serializer = AttendanceSerializer(request.data,many = True)
         if serializer.is_valid():
             serializer.save()
             return Response(status=status.HTTP_201_CREATED)

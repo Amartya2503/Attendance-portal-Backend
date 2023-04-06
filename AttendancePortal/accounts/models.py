@@ -31,7 +31,7 @@ class User(AbstractBaseUser):
         return self.first_name + " " + self.last_name
 
     def __str__(self):
-        return self.sap_id
+        return str(self.sap_id)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -56,6 +56,8 @@ class Department(models.Model):
         return self.name
 
 class Subject(models.Model):
+
+    # subject_id = models.CharField(max_length = 225,primary_key=True)
     name = models.CharField(max_length=45) 
     semester = models.PositiveSmallIntegerField()
     department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.CASCADE)
@@ -68,7 +70,7 @@ class Student(models.Model):
     total_attendance = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.user.getfullname()+", "+str(self.user.sap_id)
+        return  self.user.first_name
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -76,4 +78,4 @@ class Teacher(models.Model):
     subjects = models.ManyToManyField(Subject)
 
     def __str__(self):
-        return self.user.getfullname()
+        return self.user.first_name

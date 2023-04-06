@@ -3,6 +3,7 @@ from accounts.models import Teacher, Student, Subject, Department
 import datetime 
 
 class Batch(models.Model):
+
     semester = models.PositiveSmallIntegerField()
     year = models.PositiveIntegerField(default=datetime.date.today().year)
     name = models.CharField(max_length=55,primary_key=True)
@@ -12,7 +13,7 @@ class Batch(models.Model):
     department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        yearname = ""
+        yearname = "" #to add the no. of students to get autometically filled
         semester = self.semester
         if semester <= 2:
             yearname = "FE"
@@ -36,7 +37,7 @@ class Lecture(models.Model):
     attendance_taken = models.BooleanField(default=False)
        
     def __str__(self):
-        return str(self.batch) + " " + self.subject.name + " " + self.getShortTimeString()
+        return str(self.batch) + " " + self.subject.name + " " + str(self.getShortTimeString())
 
     def getTimeString(self):
         return self.startTime.strftime("%H:%M:%S") + " - " + self.endTime.strftime("%H:%M:%S")
@@ -52,6 +53,7 @@ class BatchStudent(models.Model):
     student =  models.ForeignKey(Student, on_delete=models.CASCADE, related_name='student_batch')
 
 class SubjectTeacher(models.Model):
+
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_teacher')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_subject')
 
@@ -59,6 +61,7 @@ class SubjectTeacher(models.Model):
         return str(self.teacher) + " " + str(self.subject) + " " + str(self.div)
 
 class Attendance(models.Model):
+
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='lecture_attendance')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lecture_subject')
     date_time = models.DateTimeField(auto_now_add=True)
