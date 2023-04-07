@@ -42,9 +42,9 @@ class CreateAttendance(GenericAPIView):
     queryset = Attendance.objects.all()
     def post(self,request):
         instance = request.data
-        count = 0
+        
         for i in instance:
-            count = count +1
+
             instance1 = Attendance.objects.get(lecture = i['lecture'], student = i['student'])
 
             serializer = AttendanceSerializer(instance1,data = i)
