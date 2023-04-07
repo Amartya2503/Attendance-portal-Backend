@@ -6,6 +6,7 @@ from rest_framework import status
 from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
 from .models import Attendance, Batch, Lecture
 
+from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
 #----------------Lecture Views Here-------------------------
@@ -44,13 +45,18 @@ class CreateAttendance(GenericAPIView):
         instance = request.data
         
         for i in instance:
+            try:
+                instance1 = Attendance.objects.get(lecture = i['lecture'], student = i['student'])
 
-            instance1 = Attendance.objects.get(lecture = i['lecture'], student = i['student'])
-
-            serializer = AttendanceSerializer(instance1,data = i)
-            if serializer.is_valid():
-                serializer.save()
-
+                serializer = AttendanceSerializer(instance1,data = i)
+                if serializer.is_valid():
+                    serializer.save()
+            
+            except ObjectDoesNotExist:
+                serializer = AttendanceSerializer(data = i)
+                if serializer.is_valid():
+                    serializer.save()
+                
         return Response(data = {"created student attendance"} ,status=status.HTTP_201_CREATED)
         
         
