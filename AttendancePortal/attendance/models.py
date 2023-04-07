@@ -22,7 +22,7 @@ class Batch(models.Model):
             yearname = "TE"
         elif semester <= 8:
             yearname = "BE"
-        return yearname + "_" + self.name
+        return yearname + "_" + self.name + "-id- " + str(self.pk)
     
 class Lecture(models.Model):
     room_number = models.CharField(max_length=32, null=True, blank=True)
@@ -36,7 +36,7 @@ class Lecture(models.Model):
     attendance_taken = models.BooleanField(default=False)
        
     def __str__(self):
-        return str(self.batch) + " " + self.subject.name + " " + str(self.getShortTimeString())
+        return str(self.batch) + " " + self.subject.name + " " + str(self.getShortTimeString()) + "-id- " + str(self.pk)
 
     def getTimeString(self):
         return self.startTime.strftime("%H:%M:%S") + " - " + self.endTime.strftime("%H:%M:%S")
@@ -60,5 +60,5 @@ class Attendance(models.Model):
             return "AB"
     
     def __str__(self):
-        return str(self.student.user.sap_id)+ " " + str(self.lecture.batch)+ " " + str(self.lecture.subject) + " " + self.isPresent()
+        return str(self.student.user.sap_id)+ " " + str(self.lecture.batch)+ " " + str(self.lecture.subject) + " " + self.isPresent() + "-id- " + str(self.pk)
     

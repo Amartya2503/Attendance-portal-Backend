@@ -7,6 +7,8 @@ from .serializers import AttendanceSerializer, LectureSerializer, BatchSerialize
 from .models import Attendance, Batch, Lecture
 
 # Create your views here.
+
+#----------------Lecture Views Here-------------------------
 class LectureAPI(GenericAPIView):
     serializer_class = LectureSerializer
     queryset = Lecture.objects.all()
@@ -16,6 +18,8 @@ class LectureAPI(GenericAPIView):
             return Response(data= {'error':lecture.errors}, status=status.HTTP_400_BAD_REQUEST)
         lecture.save()
         return Response(data = {'lecture_id': lecture.data['id']}, status=status.HTTP_201_CREATED)
+
+#----------------Batch Views Here -------------------------
 
 class BatchAPI(GenericAPIView):
     serializer_class = BatchSerializer
@@ -30,17 +34,25 @@ class BatchAPI(GenericAPIView):
             return Response(data= {'error':batch.errors}, status=status.HTTP_400_BAD_REQUEST)
         batch.save()
         return Response(data = {'batch_id': batch.data['id']}, status=status.HTTP_201_CREATED)
+    
+#-------------Attendance Views---------------------------
 
 class CreateAttendance(GenericAPIView):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
     def post(self,request):
-        serializer = AttendanceSerializer(request.data,many = True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        instance = request.data
+        count = 0
+        for i in instance:
+            count = count +1
+            instance1 = Attendance.objects.get(lecture = i['lecture'], student = i['student'])
+
+            serializer = AttendanceSerializer(instance1,data = i)
+            if serializer.is_valid():
+                serializer.save()
+
+        return Response(data = {"created student attendance"} ,status=status.HTTP_201_CREATED)
+        
         
 class AcessAttendance(GenericAPIView):
     serializer_class = AttendanceSerializer

@@ -31,7 +31,7 @@ class User(AbstractBaseUser):
         return self.first_name + " " + self.last_name
 
     def __str__(self):
-        return str(self.sap_id)
+        return str(self.sap_id) +" "+ str(self.first_name)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -70,7 +70,7 @@ class Student(models.Model):
     total_attendance = models.IntegerField(default=0)
 
     def __str__(self):
-        return  self.user.first_name
+        return  self.user.first_name + "-id-" + str(self.pk)
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

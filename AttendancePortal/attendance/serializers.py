@@ -55,3 +55,15 @@ class AttendanceSerializer(serializers.ModelSerializer):
         data['student'] = StudentSerializer(
             Student.objects.get(pk=data['student'])).data
         return data
+    
+    def create(self, validated_data):
+        print(validated_data)
+        print ("this is validated data")
+        return Attendance.objects.create(**validated_data)
+    
+    def update(self,instance,validated_data):
+        instance.present= validated_data.get('present',instance.present)  
+        print(instance)
+        instance.save()
+        return instance      
+    
