@@ -1,11 +1,12 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
 from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
 from .models import Attendance, Batch, Lecture
-
+import csv 
 from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
@@ -69,5 +70,31 @@ class AttendanceAPI(GenericAPIView):
             if serializer.is_valid():
                 serializer.save()
         return Response(data = {"message":"Student attendance updated successfully"} ,status=status.HTTP_202_ACCEPTED)
+        
+#-------------Download Attendance Views---------------------------
 
-
+class DownloadAttendanceAPI(GenericAPIView):
+    serializer_class = AttendanceSerializer
+    queryset = Attendance.objects.all()
+    def post(self,request):
+        try:
+            lecture = request.data['lecture']
+            lecture_obj = Lecture.objects.get(id = lecture)
+            attendance = Attendance.objects.filter(lecture = lecture)
+            attendance_list = [{"Sap id":i.student.user.sap_id,"Name":i.student.user.getfullname() ,"Present":i.present} for i in attendance]
+            fields = ["Sap id", "Name", "Present"] 
+            filename = f"{lecture_obj.batch.define()}_{lecture_obj.subject.name}_startTime({lecture_obj.startTime.hour}-{lecture_obj.startTime.minute})_endTime({lecture_obj.endTime.hour}-{lecture_obj.endTime.minute})_date({lecture_obj.date}).csv"
+            with open(filename, 'w') as csvfile: 
+                writer = csv.DictWriter(csvfile, fieldnames = fields) 
+                writer.writeheader() 
+                writer.writerows(attendance_list)
+            with open(filename) as csvfile:
+                response = HttpResponse(csvfile, content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                return response
+        except KeyError:
+            return Response(data= {'error':{"lecture":["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+        

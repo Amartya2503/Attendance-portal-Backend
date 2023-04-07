@@ -11,6 +11,19 @@ class Batch(models.Model):
     number_of_students = models.IntegerField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
+    def define(self):
+        yearname = "" #to add the no. of students to get autometically filled
+        semester = self.semester
+        if semester <= 2:
+            yearname = "FE"
+        elif semester <= 4:
+            yearname = "SE"
+        elif semester <= 6:
+            yearname = "TE"
+        elif semester <= 8:
+            yearname = "BE"
+        return yearname + "_" + self.name
+    
     def __str__(self):
         yearname = "" #to add the no. of students to get autometically filled
         semester = self.semester
