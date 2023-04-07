@@ -38,42 +38,36 @@ class BatchAPI(GenericAPIView):
     
 #-------------Attendance Views---------------------------
 
-class CreateAttendance(GenericAPIView):
+class AttendanceAPI(GenericAPIView):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
     def post(self,request):
         instance = request.data
-        
         for i in instance:
             try:
                 instance1 = Attendance.objects.get(lecture = i['lecture'], student = i['student'])
-
                 serializer = AttendanceSerializer(instance1,data = i)
                 if serializer.is_valid():
                     serializer.save()
-            
             except ObjectDoesNotExist:
                 serializer = AttendanceSerializer(data = i)
                 if serializer.is_valid():
                     serializer.save()
-                
-        return Response(data = {"created student attendance"} ,status=status.HTTP_201_CREATED)
-        
-        
-class AcessAttendance(GenericAPIView):
-    serializer_class = AttendanceSerializer
-    
-    def get_object(self,pk):
-        try:
-            instance = Attendance.objects.get(sap_id = pk)
-            return instance
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
+        lecture = Lecture.objects.get(id = instance[0]['lecture'])
+        lecture.attendance_taken = True
+        lecture.save()    
+        return Response(data = {"message":"Attendance created successfully"} ,status=status.HTTP_201_CREATED)
 
-    def get(self,request,pk):
-        instance = object(pk)
-        
-        #this is incomplete 
+    def patch(self, request):
+        try:
+            instance = Attendance.objects.get(lecture = request.data['lecture'], student = request.data['student'])
+            serializer = AttendanceSerializer(instance,data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+        except ObjectDoesNotExist:
+            serializer = AttendanceSerializer(data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+        return Response(data = {"message":"Student attendance updated successfully"} ,status=status.HTTP_202_ACCEPTED)
 
 

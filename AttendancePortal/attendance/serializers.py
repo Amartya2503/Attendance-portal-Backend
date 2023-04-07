@@ -57,13 +57,10 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        print(validated_data)
-        print ("this is validated data")
         return Attendance.objects.create(**validated_data)
     
     def update(self,instance,validated_data):
-        instance.present= validated_data.get('present',instance.present)  
-        print(instance)
+        instance.present= validated_data.get('present',instance.present)
         instance.save()
         return instance      
     
