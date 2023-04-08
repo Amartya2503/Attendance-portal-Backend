@@ -4,9 +4,7 @@ from .models import User, Subject, Student, Teacher, Department
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'sap_id', 'first_name', 'middle_name', 'last_name']
-    def create(self, validated_data):
-        return 
+        fields = ['id', 'sap_id', 'first_name', 'middle_name', 'last_name'] 
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
