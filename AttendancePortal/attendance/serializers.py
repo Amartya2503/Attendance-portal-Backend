@@ -1,4 +1,3 @@
-from typing import Self
 from rest_framework import serializers
 from accounts.serializers import TeacherSerializer, StudentSerializer, DepartmentSerializer, SubjectSerializer
 from accounts.models import Teacher, Student, Department, Subject
