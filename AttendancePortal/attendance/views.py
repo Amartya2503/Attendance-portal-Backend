@@ -83,7 +83,7 @@ class DownloadAttendanceAPI(GenericAPIView):
             attendance = Attendance.objects.filter(lecture = lecture)
             attendance_list = [{"Sap id":i.student.user.sap_id,"Name":i.student.user.getfullname() ,"Present":i.present} for i in attendance]
             fields = ["Sap id", "Name", "Present"] 
-            filename = f"{lecture_obj.batch.define()}_{lecture_obj.subject.name}_startTime({lecture_obj.startTime.hour}-{lecture_obj.startTime.minute})_endTime({lecture_obj.endTime.hour}-{lecture_obj.endTime.minute})_date({lecture_obj.date}).csv"
+            filename = f"attendancefiles/{lecture_obj.batch.define()}_{lecture_obj.subject.name}_startTime({lecture_obj.startTime.hour}-{lecture_obj.startTime.minute})_endTime({lecture_obj.endTime.hour}-{lecture_obj.endTime.minute})_date({lecture_obj.date}).csv"
             with open(filename, 'w') as csvfile: 
                 writer = csv.DictWriter(csvfile, fieldnames = fields) 
                 writer.writeheader() 
