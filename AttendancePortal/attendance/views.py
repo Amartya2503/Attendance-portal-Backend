@@ -4,8 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
-from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
+from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer,GetLectureSerializer
 from .models import Attendance, Batch, Lecture
+from accounts.models import *
 import csv 
 from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
@@ -14,6 +15,32 @@ from django.core.exceptions import ObjectDoesNotExist
 class LectureAPI(GenericAPIView):
     serializer_class = LectureSerializer
     queryset = Lecture.objects.all()
+    def get(self, request):
+        print(request.user.id)
+        # teacher = User.objects.get(id = request.user.id)
+
+        teacher = Teacher.objects.get(user = request.user.id )
+        print(teacher.id)
+        # instance = Lecture.objects.filter(teacher = request.user.name)
+
+        instance = Lecture.objects.filter(teacher = teacher.id)
+        print(instance)
+        serializer = GetLectureSerializer(instance,many = True)
+        return Response(serializer.data)
+
+        # print(instance[0].batch.students.all()) this is to querry the students belonging to that batch
+        # for i in instance:
+        #     print(instance[i.id].batch)
+
+
+        # serializer = LectureSerializer(data = instance)
+        # if serializer.is_valid():
+
+        #     print (serializer.data)
+        return Response(data = {"message":"my message"})
+
+
+
     def post(self, request):
         lecture = LectureSerializer(data = request.data)
         if not lecture.is_valid():
