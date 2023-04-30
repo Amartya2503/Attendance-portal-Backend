@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LogoutApi, SendVerficationAPI, ValidateVerificationView, PasswordResetAPI, PasswordResetView
+from .views import LogoutApi, SendVerficationAPI, ValidateVerificationView, PasswordResetAPI, PasswordResetView,TeacherProfile
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -12,4 +12,5 @@ urlpatterns = [
     path('email-verification/<id>/<token>/', ValidateVerificationView.as_view(), name = 'verify-email'),
     path('password-reset/', PasswordResetAPI.as_view(), name = 'password-reset'),
     path('password-reset-redirect/<id>/<token>/', PasswordResetView.as_view(), name = 'password-reset-redirect'),
+    path('teacher-profile/', TeacherProfile.as_view(), name = 'teacher-profile'),
 ]

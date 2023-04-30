@@ -4,43 +4,19 @@ from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
-from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer,GetLectureSerializer
+from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
 from .models import Attendance, Batch, Lecture
 from accounts.models import *
 import csv 
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 # Create your views here.
 
 #----------------Lecture Views Here-------------------------
 class LectureAPI(GenericAPIView):
     serializer_class = LectureSerializer
     queryset = Lecture.objects.all()
-    def get(self, request):
-        print(request.user.id)
-        # teacher = User.objects.get(id = request.user.id)
-
-        teacher = Teacher.objects.get(user = request.user.id )
-        print(teacher.id)
-        # instance = Lecture.objects.filter(teacher = request.user.name)
-
-        instance = Lecture.objects.filter(teacher = teacher.id)
-        print(instance)
-        serializer = GetLectureSerializer(instance,many = True)
-        return Response(serializer.data)
-
-        # print(instance[0].batch.students.all()) this is to querry the students belonging to that batch
-        # for i in instance:
-        #     print(instance[i.id].batch)
-
-
-        # serializer = LectureSerializer(data = instance)
-        # if serializer.is_valid():
-
-        #     print (serializer.data)
-        return Response(data = {"message":"my message"})
-
-
-
     def post(self, request):
         lecture = LectureSerializer(data = request.data)
         if not lecture.is_valid():
@@ -125,3 +101,31 @@ class DownloadAttendanceAPI(GenericAPIView):
             return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
             
         
+#-------------Assigned Teacher Lecture Views---------------------------
+class AssignedTeacherLectureAPI(APIView):
+    authentication_classes = [JWTAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+    def get(self, request):
+        serializer = LectureSerializer(Lecture.objects.filter(teacher = request.user.id), many = True)
+        serialized_data = {}
+        serialized_data['Lectures'] = [{
+            'id' : i['id'], 
+            'startTime': i['startTime'],
+            'startTime': i['startTime'],
+            'endTime': i['endTime'],
+            'date': i['date'],
+            'note': i['note'],
+            'attendance_taken': i['attendance_taken'],
+            'batch' : {
+                'id' : i['batch']['id'],
+                'semester': i['batch']['semester'],
+                'year': i['batch']['year'],
+                'name': i['batch']['name'],
+                'number_of_students': i['batch']['number_of_students'],
+            },
+            'subject':{
+                'id' : i['subject']['id'],
+                'name' : i['subject']['name']
+            }}
+            for i in serializer.data]
+        return Response(serialized_data)

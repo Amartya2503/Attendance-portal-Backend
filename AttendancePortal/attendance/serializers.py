@@ -42,11 +42,6 @@ class LectureSerializer(serializers.ModelSerializer):
                 serializer.save()
         return lecture
 
-class GetLectureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lecture
-        fields ='__all__'
-
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance

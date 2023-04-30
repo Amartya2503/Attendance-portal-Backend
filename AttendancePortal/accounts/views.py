@@ -6,7 +6,8 @@ from uuid import uuid4
 from django.core.mail import send_mail,EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
-from .models import User
+from .models import User, Teacher
+from .serializers import TeacherSerializer
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
@@ -97,3 +98,10 @@ class PasswordResetView(APIView):
                 return HttpResponse('<h1>Some error has occured</h1>')
         else:
             return HttpResponse('<h1>Token is not valid</h1>')
+        
+class TeacherProfile(APIView):
+    authentication_classes = [JWTAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+    def get(self, request):
+        serializer  = TeacherSerializer(Teacher.objects.get(id = request.user.id))
+        return Response(serializer.data)
