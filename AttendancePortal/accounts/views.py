@@ -104,5 +104,5 @@ class TeacherProfile(APIView):
     authentication_classes = [JWTAuthentication, ]
     permission_classes = [IsAuthenticated, IsTeacher]
     def get(self, request):
-        serializer  = TeacherSerializer(Teacher.objects.get(id = request.user.id))
+        serializer  = TeacherSerializer(Teacher.objects.get(teacher = User.objects.get(id = request.user.id)))
         return Response(serializer.data)
