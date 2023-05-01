@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from .models import User, Teacher
 from .serializers import TeacherSerializer
+from .custompermision import IsTeacher
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
@@ -101,7 +102,7 @@ class PasswordResetView(APIView):
         
 class TeacherProfile(APIView):
     authentication_classes = [JWTAuthentication, ]
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, IsTeacher]
     def get(self, request):
         serializer  = TeacherSerializer(Teacher.objects.get(id = request.user.id))
         return Response(serializer.data)

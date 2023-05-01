@@ -11,6 +11,7 @@ import csv
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from accounts.custompermision import IsTeacher
 # Create your views here.
 
 #----------------Lecture Views Here-------------------------
@@ -104,7 +105,7 @@ class DownloadAttendanceAPI(GenericAPIView):
 #-------------Assigned Teacher Lecture Views---------------------------
 class AssignedTeacherLectureAPI(APIView):
     authentication_classes = [JWTAuthentication, ]
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, IsTeacher]
     def get(self, request):
         serializer = LectureSerializer(Lecture.objects.filter(teacher = request.user.id), many = True)
         serialized_data = {}
