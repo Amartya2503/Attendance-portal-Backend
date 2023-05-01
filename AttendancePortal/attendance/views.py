@@ -107,7 +107,7 @@ class AssignedTeacherLectureAPI(APIView):
     authentication_classes = [JWTAuthentication, ]
     permission_classes = [IsAuthenticated, IsTeacher]
     def get(self, request):
-        serializer = LectureSerializer(Lecture.objects.filter(teacher = User.objects.get(id = request.user.id)), many = True)
+        serializer = LectureSerializer(Lecture.objects.filter(teacher = Teacher.objects.get(user = request.user.id).id), many = True)
         serialized_data = {}
         serialized_data['Lectures'] = [{
             'id' : i['id'], 
