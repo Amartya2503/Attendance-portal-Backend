@@ -7,7 +7,7 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=20, help_text='Enter your First name')
     middle_name = models.CharField(max_length=32, null=True, blank=True, default=None)
     last_name = models.CharField(max_length=20, help_text='Enter your Last name')
-    email = models.EmailField(unique=True, help_text='Enter your email' )
+    email = models.EmailField(unique=True, help_text='Enter your email',blank=True)
     email_token =  models.CharField(max_length=250, null=True, blank=True)
     password_reset_token = models.CharField(max_length=250, null=True, blank=True)
     is_email_verified = models.BooleanField(default=False)
@@ -53,7 +53,7 @@ class Department(models.Model):
     name = models.CharField(max_length=40)
 
     def __str__(self):
-        return self.name
+        return self.name + " "+str(self.id)
 
 class Subject(models.Model):
 
@@ -75,7 +75,7 @@ class Student(models.Model):
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     specialization = models.CharField(max_length=50, null=True, blank=True)
-    subjects = models.ManyToManyField(Subject)
+    subjects = models.ManyToManyField(Subject ,blank=True)
 
     def __str__(self):
         return self.user.first_name +"-"+ str(self.id)

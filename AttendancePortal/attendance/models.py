@@ -6,15 +6,15 @@ class Batch(models.Model):
     semester = models.PositiveSmallIntegerField()
     year = models.PositiveIntegerField(default=datetime.date.today().year)
     name = models.CharField(max_length=55)
-    class_teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    class_teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE,null=True)
     students = models.ManyToManyField(Student)
-    number_of_students = models.IntegerField()
+    number_of_students = models.IntegerField(null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def define(self):
         yearname = "" #to add the no. of students to get autometically filled
         semester = self.semester
-        if semester <= 2:
+        if semester <= 2:   
             yearname = "FE"
         elif semester <= 4:
             yearname = "SE"
@@ -23,6 +23,18 @@ class Batch(models.Model):
         elif semester <= 8:
             yearname = "BE"
         return yearname + "_" + self.name
+    
+    @staticmethod
+    def yearnameToYear(yearname):
+        if yearname == "FE":
+            year = 1
+        elif yearname == "SE":
+            year = 2
+        elif yearname == "TE":
+            year = 3
+        elif yearname == "BE":
+            year = 4
+        return year
     
     def __str__(self):
         yearname = "" #to add the no. of students to get autometically filled
