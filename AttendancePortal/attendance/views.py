@@ -12,6 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from accounts.custompermision import IsTeacher
+from rest_framework import mixins
 # Create your views here.
 
 #----------------Lecture Views Here-------------------------
@@ -27,7 +28,7 @@ class LectureAPI(GenericAPIView):
 
 #----------------Batch Views Here -------------------------
 
-class BatchAPI(GenericAPIView):
+class BatchAPI(GenericAPIView, mixins.ListModelMixin):
     serializer_class = BatchSerializer
     queryset = Batch.objects.all()
     def post(self, request):
@@ -40,6 +41,8 @@ class BatchAPI(GenericAPIView):
             return Response(data= {'error':batch.errors}, status=status.HTTP_400_BAD_REQUEST)
         batch.save()
         return Response(data = {'batch_id': batch.data['id']}, status=status.HTTP_201_CREATED)
+    def get(self, request):
+        return self.list(request)
     
 #-------------Attendance Views---------------------------
 
