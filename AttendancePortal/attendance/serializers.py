@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from accounts.serializers import TeacherSerializer, StudentSerializer, DepartmentSerializer, SubjectSerializer
 from accounts.models import Teacher, Student, Department, Subject
-from attendance.models import Attendance, Batch, Lecture
+from attendance.models import Attendance, Batch, Lecture, TeacherBatch
 
 class BatchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,3 +63,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         instance.save()
         return instance      
     
+class TeacherBatchSerializer(serializers.Serializer):
+    class Meta:
+        model = TeacherBatch
+        fields = '__all__'

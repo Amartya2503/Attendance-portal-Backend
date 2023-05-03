@@ -2,6 +2,8 @@ from django.db import models
 from .managers import UserManager
 from django.contrib.auth.models import AbstractBaseUser
 
+
+
 class User(AbstractBaseUser):
     sap_id = models.BigIntegerField(unique=True,help_text='Enter your Unique Id')
     first_name = models.CharField(max_length=20, help_text='Enter your First name')

@@ -86,4 +86,10 @@ class Attendance(models.Model):
     
     def __str__(self):
         return str(self.student.user.sap_id)+ " " + str(self.lecture.batch)+ " " + str(self.lecture.subject) + " " + self.isPresent() + "-id- " + str(self.pk)
-    
+
+class TeacherBatch(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='teacher_batch')
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_teacher_assigned')
+
+    def __str__(self):
+        return str(self.teacher.user.first_name) + str(self.batch.name)
