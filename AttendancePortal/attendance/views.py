@@ -4,15 +4,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
-from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer
-from .models import Attendance, Batch, Lecture
+from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer, TeacherBatchSerializer
+from .models import Attendance, Batch, Lecture, TeacherBatch
 from accounts.models import *
 import csv 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from accounts.custompermision import IsTeacher
-from rest_framework import mixins
 # Create your views here.
 
 #----------------Lecture Views Here-------------------------
@@ -28,7 +27,7 @@ class LectureAPI(GenericAPIView):
 
 #----------------Batch Views Here -------------------------
 
-class BatchAPI(GenericAPIView, mixins.ListModelMixin):
+class BatchAPI(GenericAPIView):
     serializer_class = BatchSerializer
     queryset = Batch.objects.all()
     def post(self, request):
@@ -41,8 +40,6 @@ class BatchAPI(GenericAPIView, mixins.ListModelMixin):
             return Response(data= {'error':batch.errors}, status=status.HTTP_400_BAD_REQUEST)
         batch.save()
         return Response(data = {'batch_id': batch.data['id']}, status=status.HTTP_201_CREATED)
-    def get(self, request):
-        return self.list(request)
     
 #-------------Attendance Views---------------------------
 
@@ -133,3 +130,34 @@ class AssignedTeacherLectureAPI(APIView):
             }}
             for i in serializer.data]
         return Response(serialized_data)
+    
+class TeacherBatchAPI(APIView):
+    authentication_classes = [JWTAuthentication, ]
+    permission_classes = [IsAuthenticated, IsTeacher]
+    def get(self, request):
+        teacherbatch = TeacherBatchSerializer(TeacherBatch.objects.filter(teacher = Teacher.objects.get(user = request.user.id).id), many = True)
+        batch_array = [{'id':i['batch']['id'],
+                        'semester':i['batch']['semester'],
+                        'year':i['batch']['year'],
+                        'name':i['batch']['name'],
+                        'number_of_students':i['batch']['number_of_students'],
+                        'class_teacher' : User.objects.get(id  = i['batch']['class_teacher']['user']['id']).getfullname(),
+                        'department' : i['batch']['department']['name']
+                        }
+                       for i  in teacherbatch.data]
+        return Response(batch_array)
+    
+class BatchDataAPI(APIView):
+    def post(self, request):
+        try:
+            batch = BatchSerializer(Batch.objects.get(id = request.data['batch'])).data
+            student_array = [{'id':i['id'],
+                              'sap_id':i['user']['sap_id'],
+                              'name' : User.objects.get(id  = i['user']['id']).getfullname()
+                              } 
+                             for i in batch['students']]
+            return Response(student_array)
+        except KeyError:
+            return Response(data= {'error':{"batch":["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)

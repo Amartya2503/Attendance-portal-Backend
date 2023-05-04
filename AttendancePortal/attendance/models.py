@@ -80,4 +80,4 @@ class TeacherBatch(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE, related_name='batch_teacher_assigned')
 
     def __str__(self):
-        return str(self.teacher.user.first_name) + str(self.batch.name)
+        return str(self.teacher.user.first_name) +' '+str(self.batch.name)

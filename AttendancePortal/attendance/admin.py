@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(Attendance)
 admin.site.register(Lecture)
 admin.site.register(Batch)
+admin.site.register(TeacherBatch)

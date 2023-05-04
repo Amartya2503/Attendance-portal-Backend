@@ -67,3 +67,11 @@ class TeacherBatchSerializer(serializers.Serializer):
     class Meta:
         model = TeacherBatch
         fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['teacher'] = TeacherSerializer(
+            instance.teacher).data
+        data['batch'] = BatchSerializer(
+            instance.batch).data
+        return data
