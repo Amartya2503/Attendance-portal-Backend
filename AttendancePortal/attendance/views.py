@@ -46,6 +46,41 @@ class BatchAPI(GenericAPIView):
 class AttendanceAPI(GenericAPIView):
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
+    def get(self,request):
+        lec_id = request.data['lecture']
+        # student_id = request.data.student
+        students = []
+        # attendences = Attendance.objects.filter(lecture = request.data['lecture'])
+        # print(attendences) 
+        serializer = AttendanceSerializer(Attendance.objects.filter(lecture = request.data['lecture']),many = True)
+        serialized_data = {}
+        serialized_data['Attendences'] = [{
+            "id" : i['id'], 
+            "date_time":i["date_time"],
+            "present":i["present"],
+            "lecture":{
+                "id":i["lecture"]["id"],
+                "teacher":{
+                    "id":i["lecture"]["teacher"]["id"]
+                },
+                "batch":{
+                    i["lecture"]["batch"]["id"]
+                }
+            },
+            "student":{
+                "id": i["student"]["id"],
+                "user":{
+                    "id":i["student"]["user"]["id"],
+                    "sap_id":i["student"]["user"]["sap_id"],
+                    "first_name":i["student"]["user"]["first_name"],
+                    "last_name":i["student"]["user"]["middle_name"],
+
+                }
+            }
+        }for i in serializer.data]
+
+        return Response( serialized_data)
+
     def post(self,request):
         instance = request.data
         for i in instance:
