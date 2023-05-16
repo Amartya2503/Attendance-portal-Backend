@@ -77,6 +77,7 @@ class Attendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lecture_subject')
     date_time = models.DateTimeField(auto_now_add=True)
     present = models.BooleanField(default= False)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE,related_name='Attendance_subject',default=1)
 
     def isPresent(self):
         if self.present == True:
@@ -93,3 +94,7 @@ class TeacherBatch(models.Model):
 
     def __str__(self):
         return str(self.teacher.user.first_name) +' '+str(self.batch.name)
+    
+# theis is to keep a track of a student attending a perticular subject 
+# class StudentSubject(models.Model):
+#     # student

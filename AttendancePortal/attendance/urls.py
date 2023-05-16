@@ -8,5 +8,6 @@ urlpatterns = [
     path('download-attendance/', DownloadAttendanceAPI.as_view(), name = 'download_attendance'),
     path('assigned-teacher-lecture/', AssignedTeacherLectureAPI.as_view(), name = 'assignedteacherlecture'),
     path('teachers-batch/', TeacherBatchAPI.as_view(), name = 'teacherbatch'),
-    path('batch-data/', BatchDataAPI.as_view(), name = 'batch-data')
+    path('batch-data/', BatchDataAPI.as_view(), name = 'batch-data'),
+    path('download-attendance-range/',DownloadAttendanceRange.as_view(),name='download-attendance-range')
 ]

@@ -164,6 +164,7 @@ def createTeacher(id, f_name, l_name, spec="Computer Engineering"):
     user.save()
     teacher = Teacher.objects.create(user=user, teacherID=id, specialization=spec)
     print(teacher)
+    
 def mycreateTeacher(path,department):
 
     if department ==1 :

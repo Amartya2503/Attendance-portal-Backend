@@ -23,7 +23,7 @@ class LectureAPI(GenericAPIView):
         if not lecture.is_valid():
             return Response(data= {'error':lecture.errors}, status=status.HTTP_400_BAD_REQUEST)
         lecture.save()
-        return Response(data = {'lecture_id': lecture.data['id']}, status=status.HTTP_201_CREATED)
+        return Response(data = {'lecture_id': lecture.data['id']}, status=status.HTTP)
 
 #----------------Batch Views Here -------------------------
 
@@ -40,6 +40,9 @@ class BatchAPI(GenericAPIView):
             return Response(data= {'error':batch.errors}, status=status.HTTP_400_BAD_REQUEST)
         batch.save()
         return Response(data = {'batch_id': batch.data['id']}, status=status.HTTP_201_CREATED)
+    def delete(self,request):
+        lec = Lecture.objects.get(id = request.data['id'])
+        lec.delete()
     
 #-------------Attendance Views---------------------------
 
@@ -195,3 +198,63 @@ class BatchDataAPI(APIView):
             return Response(data= {'error':{"batch":["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+# class DownloadAttendanceRange(GenericAPIView):
+#     serializer_class = AttendanceSerializer
+#     queryset = Attendance.objects.all()
+#     def post(self,request):
+
+#         attendances = Attendance.objects.filter(student = Student.objects.get(id = request.data['student'])).filter(subject = request.data['subject'])
+#         fromDate = request.data['from']
+#         toDate = request.data['to']
+#         count = 0
+#         for attendance in attendances:
+#             if attendance.present:
+#                 count +=1
+#             print(attendances.count())
+#             print (attendance.lecture.date)
+#             print(count)
+#             print(attendance.subject)
+#             per = (attendances.count()/count)*100
+#             print('attendance % = ',per)
+#             print(attendance.date_time)
+#         lec_list = []
+#         lectures = Lecture.objects.filter(date__range = [fromDate,toDate],teacher =Teacher.objects.get(user =  request.user.id).id,batch = request.data['batch'],subject = request.data['subject'])
+#         print(lectures)       
+#         for lecture in lectures:
+            
+#             lec_list.append(
+#                 lecture
+#             )
+        
+#         # for lecture in lec_list:
+#         #     print(lecture.teacher,lecture.subject)
+#         attendance_list= {}
+#         for lecture in lectures:
+#             # print(lecture.teacher)
+#             attendances = Attendance.objects.filter(lecture = lecture.id).order_by('id')
+#             for attendance in attendances:
+#                 print(attendance)
+#                 if attendance.student.user.sap_id not in attendance_list:
+#                     print(attendance.student.user.sap_id,"Not found")
+#                     if attendance.present:
+#                         attendance_list[attendance.student.user.sap_id] = [1,(1/len(lec_list)*100)]
+#                     else:
+#                         attendance_list[attendance.student.user.sap_id] = [0,0.0]
+#                 else:
+#                     if attendance.present:
+#                         attendance_list[attendance.student.user.sap_id] = [attendance_list[attendance.student.user.sap_id][0]+1, (attendance_list[attendance.student.user.sap_id][0]+1)/len(lec_list)*100 ]
+#                     # else:
+#                     #     attendance_list[attendance.student.user.sap_id][0] += 1
+                    
+#         print(attendance_list)
+        
+#         # {
+#         #     "student":155,
+#         #     "subject":2,
+#         #     "from": "2023-05-07",
+#         #     "to" : "2023-05-18",
+#         #     "batch":9           
+#         # }
+
+#         return Response('hello')    
