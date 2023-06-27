@@ -35,11 +35,14 @@ class LectureSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         batch = BatchSerializer(validated_data['batch']).data
+        subject = SubjectSerializer(validated_data['subject']).data
         lecture = Lecture.objects.create(**validated_data)
         for i in batch['students']:
-            serializer = AttendanceSerializer(data = {'lecture' : lecture.id, 'student': i['id']})
+            serializer = AttendanceSerializer(data = {'lecture' : lecture.id, 'student': i['id'],'subject':subject['id']})
             if serializer.is_valid():
                 serializer.save()
+            else:
+                print("srghh")
         return lecture
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -53,6 +56,9 @@ class AttendanceSerializer(serializers.ModelSerializer):
            Lecture.objects.get(pk=data['lecture'])).data
         data['student'] = StudentSerializer(
             Student.objects.get(pk=data['student'])).data
+        data['subject'] = SubjectSerializer(
+            Subject.objects.get(pk = data['subject'])
+        ).data
         return data
     
     def create(self, validated_data):
