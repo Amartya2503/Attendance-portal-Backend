@@ -12,9 +12,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from accounts.custompermision import IsTeacher
-
+from django.conf import settings
+from django.core.mail import send_mail
 import datetime
 # Create your views here.
+
 
 #----------------Lecture Views Here-------------------------
 class LectureAPI(GenericAPIView):
@@ -370,3 +372,34 @@ class BatchDataAPI(APIView):
 #         # }
 
 #         return Response('hello')    
+
+class MailAttendanceAPI(GenericAPIView):
+    serializer_class = AttendanceSerializer
+    queryset = Attendance.objects.all()
+    authentication_classes = [JWTAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+    def post(self,request):
+        try:
+            user = request.user
+            lecture = request.data['lecture']
+            lecture_obj = Lecture.objects.get(id = lecture)
+            attendance = Attendance.objects.filter(lecture = lecture)
+            attendance_list = [{"Sap id":i.student.user.sap_id,"Name":i.student.user.getfullname() ,"Present":i.present} for i in attendance]
+            fields = ["Sap id", "Name", "Present"] 
+            filename = f"attendancefiles/{lecture_obj.batch.define()}_{lecture_obj.subject.name}_startTime({lecture_obj.startTime.hour}-{lecture_obj.startTime.minute})_endTime({lecture_obj.endTime.hour}-{lecture_obj.endTime.minute})_date({lecture_obj.date}).csv"
+            with open(filename, 'w') as csvfile: 
+                writer = csv.DictWriter(csvfile, fieldnames = fields) 
+                writer.writeheader() 
+                writer.writerows(attendance_list)
+            with open(filename) as csvfile:
+                response = HttpResponse(csvfile, content_type='text/csv')
+                subject = 'Here is your file'
+                message = f'File : {filename}'
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [user.email, ]
+                mail = send_mail( subject, message, email_from, recipient_list )
+                return Response({'status': 200,'message' : 'Please Check Your Mail, File has been sent to your mail'})
+        except KeyError:
+            return Response(data= {'error':{"lecture":["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
