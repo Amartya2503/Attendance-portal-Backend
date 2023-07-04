@@ -65,7 +65,7 @@ class Subject(models.Model):
     department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name + '(sem ' + str(self.semester) + ')'
+        return self.name + '(sem ' + str(self.semester) + ')' + '-id-' + str(self.id)
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

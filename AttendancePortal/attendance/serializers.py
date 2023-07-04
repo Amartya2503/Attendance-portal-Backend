@@ -21,6 +21,7 @@ class BatchSerializer(serializers.ModelSerializer):
 class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
+        optional_fields = ['startTime','endTime','date','note','attendance_taken','room_number','teacher','batch','subject']
         fields = '__all__'
 
     def to_representation(self, instance):
@@ -44,6 +45,14 @@ class LectureSerializer(serializers.ModelSerializer):
             else:
                 print("srghh")
         return lecture
+    
+    def update(self,instance,validated_data):
+
+        instance = super().update(instance, validated_data)
+        instance.save()
+        
+        return instance
+        
 
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:

@@ -12,6 +12,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from accounts.custompermision import IsTeacher
+
+import datetime
 # Create your views here.
 
 #----------------Lecture Views Here-------------------------
@@ -23,7 +25,49 @@ class LectureAPI(GenericAPIView):
         if not lecture.is_valid():
             return Response(data= {'error':lecture.errors}, status=status.HTTP_400_BAD_REQUEST)
         lecture.save()
-        return Response(data = {'lecture_id': lecture.data['id']}, status=status.HTTP)
+        return Response(data = {'lecture_id': lecture.data['id']}, status=status.HTTP_200_OK)
+    
+    # serializer_class = LectureSerializer
+    # queryset = Lecture.objects.all()
+
+#-------------------Lecture patch and delete views---------------------
+
+class EDLectureAPI(GenericAPIView):
+    serializer_class = LectureSerializer
+    queryset = Lecture.objects.all()
+
+    def get(self,request,id):
+        try:
+            l = Lecture.objects.get(id = id)
+            serializer = LectureSerializer(l)
+            return Response(data = {'data' : serializer.data},status= status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({'message' : f'Lecture with id {id} does not exist'},status= status.HTTP_404_NOT_FOUND)
+        
+    def patch(self,request,id):
+        lec_id = id
+        try:
+            instance = Lecture.objects.get(id = lec_id)
+            serializer = LectureSerializer(instance, data = request.data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                print("error",serializer.errors)
+            return Response(data = {'message': f'updating {instance} with {request.data}','data': serializer.data},status = status.HTTP_202_ACCEPTED)
+        except ObjectDoesNotExist:
+            print('nope')
+            return Response(data ={'message': f'could not edit {instance}'},status = status.HTTP_400_BAD_REQUEST)
+                    
+    def delete(self,request,id):
+        lec_id = id
+        try:
+            l =Lecture.objects.get(id = lec_id)
+            print(l)
+            l.delete()
+            return Response(data = {'message': f'deleted {lec_id}'},status = status.HTTP_302_FOUND)
+        except ObjectDoesNotExist:
+            return Response(data = {'error':'Lecture DNE'},status = status.HTTP_404_NOT_FOUND)
+
 
 #----------------Batch Views Here -------------------------
 
@@ -137,8 +181,76 @@ class DownloadAttendanceAPI(GenericAPIView):
             return Response(data= {'error':{"lecture":["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class RangeAttendanceDownload(GenericAPIView):
+    serializer_class = AttendanceSerializer
+    queryset = Attendance.objects.all()
+    def post(self,request):
+        try:
+            instance1 = Attendance.objects.all().filter(subject = request.data['subject']).filter(lecture__batch = request.data['batch']).filter(lecture__teacher__user__id = request.user.id).order_by('student__user__sap_id','lecture__date')
             
+            attendan = []
+            sy,sm,sd = request.data['start'].split('-')
+            startdate =  datetime.datetime(int(sy), int(sm), int(sd)).date()
+            ey,em,ed = request.data['end'].split('-')
+            end_date =  datetime.datetime(int(ey), int(em), int(ed)).date()
+            print(sd,sm,sy)
+            
+            
+            lectures = Lecture.objects.filter(date__gte = startdate , date__lte = end_date ).filter(subject = request.data['subject'],batch = request.data['batch'],teacher__user__id = request.user.id)
+            no_of_lecs = len(lectures)
+            
+            sap_list=[]
+            sap_score = []
+            i = 0
+            
+            for j in instance1:
+                # print(j.lecture.date)
+                if(j.lecture.date >= startdate and j.lecture.date <= end_date ):
+                    attendan.append(j)
+                    
+            for j in attendan:
+                # print(f'{j} - '+ str(j.lecture.date))
+                
+                if j.student.user.sap_id in sap_list and j.present == True:
+                    sap_score[i-1] += 1
+                elif j.student.user.sap_id in sap_list and j.present == False:
+                    pass
+                else:
+                    sap_list.append(j.student.user.sap_id)
+                    if j.present == True:
+                        sap_score.append(1)
+                    else:
+                        sap_score.append(0)
+                    i += 1
+            attendance_final = []        
+            for i in range(len(sap_list)):
+                attendance_final.append({'SAP' : sap_list[i], 'Full Name' : User.objects.get(sap_id = sap_list[i]).getfullname() , 'Attendance' : sap_score[i] , 'Total Lectures': no_of_lecs})
+                print(f'{sap_list[i]} -{sap_score[i]} - {User.objects.get(sap_id = sap_list[i]).getfullname()}')
+                i += 1    
+            # print(attendan.student.user.sap_id)                  
+            print(attendance_final)
+            #creating the CSV file :
+            
+            fields = ["SAP","Full Name","Attendance","Total Lectures"]
+            
+            filename = f"attendancefiles/{request.data['batch']}_{startdate}_To_{end_date}_AttendanceList"   
+            
+            with open(filename,'w') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames = fields) 
+                writer.writeheader() 
+                writer.writerows(attendance_final) 
+                  
+            with open(filename) as csvfile:
+                response = HttpResponse(csvfile, content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+                return response
+        except Exception as e:
+            return Response(data ={'message' : str(e)}, status = status.HTTP_400_BAD_REQUEST)
+            # return Response({'message' : 'uhohh'}, status = status.HTTP_400_BAD_REQUEST)
         
+    
+    
 #-------------Assigned Teacher Lecture Views---------------------------
 class AssignedTeacherLectureAPI(APIView):
     authentication_classes = [JWTAuthentication, ]
