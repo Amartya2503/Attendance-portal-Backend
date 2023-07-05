@@ -75,7 +75,7 @@ class Lecture(models.Model):
 class Attendance(models.Model):
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='lecture_attendance')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='lecture_subject')
-    date_time = models.DateTimeField(auto_now_add=True)
+    # date_time = models.DateTimeField(auto_now_add=True,blank=True)
     present = models.BooleanField(default= False)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE,related_name='Attendance_subject',default=1)
 
