@@ -1,10 +1,12 @@
+
+from .dump import SAPDump,CustomSapDump
 from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
-from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer, TeacherBatchSerializer
+from .serializers import AttendanceSerializer, LectureSerializer, BatchSerializer, TeacherBatchSerializer, newBatchSerializer
 from .models import Attendance, Batch, Lecture, TeacherBatch
 from accounts.models import *
 import csv 
@@ -132,8 +134,10 @@ class AttendanceAPI(GenericAPIView):
     def post(self,request):
         instance = request.data
         for i in instance:
-            try:
-                instance1 = Attendance.objects.get(lecture = i['lecture'], student = i['student'])
+            if 'student' not in i.keys():
+                continue
+            try:                
+                instance1 = Attendance.objects.get(lecture = i['lecture'], student = int(i['student']))
                 serializer = AttendanceSerializer(instance1,data = i)
                 if serializer.is_valid():
                     serializer.save()
@@ -185,12 +189,18 @@ class DownloadAttendanceAPI(GenericAPIView):
             return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class RangeAttendanceDownload(GenericAPIView):
+    permission_classes = [IsAuthenticated,]
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
     def post(self,request):
         try:
-            instance1 = Attendance.objects.all().filter(subject = request.data['subject']).filter(lecture__batch = request.data['batch']).filter(lecture__teacher__user__id = request.user.id).order_by('student__user__sap_id','lecture__date')
+            instance1 = Attendance.objects.filter(subject = int(request.data['subject'])).filter(lecture__batch = int(request.data['batch'])).filter(lecture__teacher__user__id = request.user.id).order_by('student__user__sap_id','lecture__date')
+            # .filter(lecture__teacher__user__id = request.user.id).order_by('student__user__sap_id','lecture__date')
+            # .filter(lecture__batch = int(request.data['batch']))
+            # .filter(lecture__teacher__user__id = request.user.id).order_by('student__user__sap_id','lecture__date')
+            print(instance1)
             
+                        
             attendan = []
             sy,sm,sd = request.data['start'].split('-')
             startdate =  datetime.datetime(int(sy), int(sm), int(sd)).date()
@@ -287,24 +297,42 @@ class TeacherBatchAPI(APIView):
     permission_classes = [IsAuthenticated, IsTeacher]
     def get(self, request):
         teacherbatch = TeacherBatchSerializer(TeacherBatch.objects.filter(teacher = Teacher.objects.get(user = request.user.id).id), many = True)
-        batch_array = [{'id':i['batch']['id'],
+        batch_array = []
+        for i in teacherbatch.data:
+            if i['batch']['class_teacher'] == {}:
+                cTeacher = "Not defined"
+            else:
+                cTeacher = User.objects.get(id  = i['batch']['class_teacher']['user']['id']).getfullname()
+            batch_array.append(
+                {'id':i['batch']['id'],
                         'semester':i['batch']['semester'],
                         'year':i['batch']['year'],
                         'name':i['batch']['name'],
                         'number_of_students':i['batch']['number_of_students'],
-                        'class_teacher' : User.objects.get(id  = i['batch']['class_teacher']['user']['id']).getfullname(),
+                        'class_teacher' : cTeacher,
                         'department' : i['batch']['department']['name']
                         }
-                       for i  in teacherbatch.data]
+            )
+        # batch_array = [{'id':i['batch']['id'],
+        #                 'semester':i['batch']['semester'],
+        #                 'year':i['batch']['year'],
+        #                 'name':i['batch']['name'],
+        #                 'number_of_students':i['batch']['number_of_students'],
+        #                 'class_teacher' : cTeacher,
+        #                 'department' : i['batch']['department']['name']
+        #                 }
+        #                for i  in teacherbatch.data]
         return Response(batch_array)
     
 class BatchDataAPI(APIView):
     def post(self, request):
         try:
-            batch = BatchSerializer(Batch.objects.get(id = request.data['batch'])).data
+            # print(Batch.objects.get(id = request.data['batch']))
+            batch = newBatchSerializer(Batch.objects.get(id = request.data['batch'])).data
             student_array = [{'id':i['id'],
                               'sap_id':i['user']['sap_id'],
-                              'name' : User.objects.get(id  = i['user']['id']).getfullname()
+                            #   'name' : User.objects.get(id  = i['user']['id']).getfullname()
+                            'name': i['user']['first_name']+" "+ i['user']['last_name']
                               } 
                              for i in batch['students']]
             return Response(student_array)
@@ -403,3 +431,19 @@ class MailAttendanceAPI(GenericAPIView):
             return Response(data= {'error':{"lecture":["This field is required."]}}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(data= {'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+class InputFile(GenericAPIView):
+    authentication_classes = [JWTAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+    # serializer_class = TeacherBatchSerializer
+    def post(self,request):
+        file = request.FILES.getlist('files')
+        
+        for i in range(len(file)):
+            # print(file[i]) 
+            CustomSapDump(file[i])
+               
+            
+        return Response(status = status.HTTP_200_OK)    
+    
+    

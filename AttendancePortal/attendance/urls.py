@@ -12,4 +12,5 @@ urlpatterns = [
     path('batch-data/', BatchDataAPI.as_view(), name = 'batch-data'),
     # path('download-attendance-range/',DownloadAttendanceRange.as_view(),name='download-attendance-range')
     path('download-attendance-range/',RangeAttendanceDownload.as_view(),name='download-attendance-range'),
+    path('attenFile/',InputFile.as_view(),name = 'attenFile')
 ]

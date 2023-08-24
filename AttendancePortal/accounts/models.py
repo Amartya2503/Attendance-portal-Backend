@@ -72,7 +72,7 @@ class Student(models.Model):
     total_attendance = models.IntegerField(default=0)
 
     def __str__(self):
-        return  self.user.first_name + "-id-" + str(self.pk)
+        return  self.user.first_name + "-id-" + str(self.pk) + "-SapId" + str(self.user.sap_id)
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -80,4 +80,4 @@ class Teacher(models.Model):
     subjects = models.ManyToManyField(Subject ,blank=True)
 
     def __str__(self):
-        return self.user.first_name +"-"+ str(self.id)
+        return self.user.first_name +"-"+ str(self.id) + "-SapId" + str(self.user.sap_id)

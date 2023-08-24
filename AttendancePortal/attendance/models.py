@@ -6,7 +6,7 @@ class Batch(models.Model):
     semester = models.PositiveSmallIntegerField()
     year = models.PositiveIntegerField(default=datetime.date.today().year)
     name = models.CharField(max_length=55)
-    class_teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE,null=True)
+    class_teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE,null=True,blank= True)
     students = models.ManyToManyField(Student)
     number_of_students = models.IntegerField(null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)

@@ -1,6 +1,10 @@
 import csv
 import importlib  
 
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import io
+from django.core.exceptions import ObjectDoesNotExist
+
 from django.db.models import Q
 from accounts.models import Teacher, Student, Subject, User,Department
 # accounts = importlib.import_module('AttendancePortal.accounts.models')
@@ -16,25 +20,138 @@ if date.today().month < 6:
     current_sem = "even"
 else:
     current_sem = "odd"
-
+# file name format : BE_Batchname_Department_ClassTeacherSAP.csv
 def CustomSapDump(file):
     print(file)
-    # yearname, division,department = div_name.split("_")
-    # department = int(department)
-    # print(department)
-    # print(type(department))
+    try:  
+        uploaded_file = file
+        filename = str(file)
+        list_name = str(filename).split("_")
+        print(list_name)
+        if len(list_name) == 4:
+            yearname, division,department,classteacher = str(filename).split("_")
+            department= int(department)
+            teacher_SAP = int(classteacher.split('.')[0])
+        elif len(list_name) == 3:
+            yearname, division,department = str(filename).split("_")
+            department = int(department.split(".")[0])
+            teacher_SAP = 19210161 #assigning defult pranit bari sir's Sap Id as Sap not provided in the file name
+            print("assigning defult pranit bari sir's Sap Id as Sap not provided in the file name")               
+        else:
+            print(len(list_name))
+            raise Exception("there is an issue in the file name ")                 
+        overwrite= True
+        reverse_names = False
+        try:
+            teacher = Teacher.objects.get(user = User.objects.get(sap_id = teacher_SAP))
+        except Teacher.ObjectDoesNotExist:
+            print("no teacher is in the database with sap id ",teacher_SAP," thus assigning defauly teacher sap ",19210161)
+            teacher = Teacher.objects.get(user = User.objects.get(sap_id = 19210161))
+            
+        
+        print(type(file))       
+        year = Batch.yearnameToYear(yearname)
+        #yeartoYearname is a function ------ 
 
-    # year = Batch.yearnameToYear(yearname)
-    # #yeartoYearname is a function ------ 
+        if date.today().month < 6:
+            semester = year * 2
+        elif date.today().month > 6:
+            semester = year * 2 - 1
 
-    # if date.today().month < 6:
-    #     semester = year * 2
-    # elif date.today().month > 6:
-    #     semester = year * 2 - 1
+        div_exists = Batch.objects.filter(semester=semester, name=division,department = department).exists()
+        print(div_exists)
+        print(yearname,department,classteacher,teacher_SAP)
+        if div_exists and not overwrite:
+            raise Exception("Div already exists, set overwrite to True to overwrite")
+        elif div_exists:
+            div = Batch.objects.get(semester=semester, name=division,department = department)
+            if div.class_teacher is None and teacher :
+                div.class_teacher = teacher
+            else:
+                print("no teacher was found")
+                                    
+        else:
+            if teacher_SAP:
+                # names = classteacher.strip().split(' ')
+                teacher = Teacher.objects.get(user=User.objects.get(sap_id = teacher_SAP))
+                div = Batch.objects.create(semester=semester, name=division,department = int(department))
+                div.class_teacher = teacher
+                div.save()
+            else:
+                div = Batch.objects.create(semester=semester,  name=division,department = Department.objects.get(id = department))
+                div.save()
+                
+        count = 0
+        if isinstance(uploaded_file, InMemoryUploadedFile) and uploaded_file.content_type == 'text/csv':
+            # Read the contents of the uploaded CSV file
+            file_contents = uploaded_file.read().decode('utf-8')  
+                        
+            # Create a CSV reader using the StringIO object
+            csv_io = io.StringIO(file_contents)
+            csv_reader = csv.reader(csv_io)
+            
+            # Iterate through the CSV rows
+            for row in csv_reader:
+                if len(row[1]) and len(row[2]):
+                    name = row[2].lower()
+                    sap = int(row[1])
+                    try:
+                        user = User.objects.get(sap_id=sap)
+                        user.is_student = True
+                        found = True
+                    except User.DoesNotExist:
+                        user = User.objects.create(sap_id=sap, password='pass@123',email = (str(sap)+'@mail.com'))
+                        user.set_password('pass@123')
+                        user.is_student = True
+                        found = False
 
-    # div_exists = Batch.objects.filter(semester=semester, name=division,department = department).exists()
+                    if (not found) or overwrite:
+                        names = name.split(' ')
+                        names = [name.capitalize() for name in names]
+                        if reverse_names:
+                            if len(names) > 2:
+                                user.first_name = names[1]
+                                user.middle_name = " ".join(names[2:])
+                                user.last_name = names[0]
+                            elif len(names) == 2:
+                                user.first_name = names[1]
+                                user.last_name = names[0]
+                            else:
+                                user.first_name = name
+                                user.last_name = ""
+                        else:
+                            if len(names) > 2:
+                                user.first_name = names[0]
+                                user.middle_name = " ".join(names[1:-1])
+                                user.last_name = names[-1]
+                            elif len(names) == 2:
+                                user.first_name = names[0]
+                                user.last_name = names[1]
+                            else:
+                                user.first_name = name
+                                user.last_name = "" 
+                        user.save()
 
+                    if not found:
+                        student = Student.objects.create(user=user)
+                        print("created student",student.user.first_name)
+                        count += 1
+                    else:
+                        student = Student.objects.get(user=user)
+                        print("student found",student.user.first_name)
+                        count += 1 
 
+                    # StudentDivision.objects.get_or_create(student=student, division=div)
+                    # print(student)
+                    div.students.add(student)
+                    div.save()
+            div.number_of_students = count
+            div.save()
+        else:
+            print("Uploaded file is not a CSV file.")       
+    except Exception as e:
+        raise Exception("the file name provided is not acceptable or the name format is incorrect",e)
+    
 def SAPDump(path, div_name, overwrite=False, reverse_names=False, classteacher=None):
     #required format of input from shell now becomes SE_A_COMP
     # instead of SE_A earlier

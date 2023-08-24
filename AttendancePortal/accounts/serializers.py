@@ -23,6 +23,16 @@ class SubjectSerializer(serializers.ModelSerializer):
         return data
         
 
+# class newStudentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Student
+#         fields =['id','user']
+#     def to_representation(self, instance):
+#         data = super().to_representation(instance)
+#         data['user'] = UserSerializer(
+#             User.objects.get(pk=data['user'])).data
+#         return data
+   
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
